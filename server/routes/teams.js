@@ -10,6 +10,45 @@ router.get('/', (req, res) => {
   res.json(members);
 });
 
+// GET /api/team/workload — team members with task counts and priority breakdown
+router.get('/workload', (req, res) => {
+  const db = getDb();
+
+  const members = db.prepare(`
+    SELECT tm.*,
+      COUNT(t.id) as total_tasks,
+      SUM(CASE WHEN t.priority = 'urgent' THEN 1 ELSE 0 END) as urgent_count,
+      SUM(CASE WHEN t.priority = 'high' THEN 1 ELSE 0 END) as high_count,
+      SUM(CASE WHEN t.priority = 'medium' THEN 1 ELSE 0 END) as medium_count,
+      SUM(CASE WHEN t.priority = 'low' THEN 1 ELSE 0 END) as low_count
+    FROM team_members tm
+    LEFT JOIN tasks t ON tm.id = t.assignee_id
+    GROUP BY tm.id
+    ORDER BY total_tasks DESC
+  `).all();
+
+  const tasks = db.prepare(`
+    SELECT t.*, p.name as project_name
+    FROM tasks t
+    LEFT JOIN projects p ON t.project_id = p.id
+    WHERE t.assignee_id IS NOT NULL
+    ORDER BY t.assignee_id, t.due_date ASC
+  `).all();
+
+  const tasksByMember = {};
+  tasks.forEach((t) => {
+    if (!tasksByMember[t.assignee_id]) tasksByMember[t.assignee_id] = [];
+    tasksByMember[t.assignee_id].push(t);
+  });
+
+  const result = members.map((m) => ({
+    ...m,
+    tasks: tasksByMember[m.id] || [],
+  }));
+
+  res.json(result);
+});
+
 // GET /api/team/:id — single team member
 router.get('/:id', (req, res) => {
   const db = getDb();

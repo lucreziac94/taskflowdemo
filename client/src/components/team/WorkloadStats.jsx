@@ -39,41 +39,44 @@ const icons = {
       <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
     </svg>
   ),
-  check: (color) => (
+  avg: (color) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 00-3-3.87" />
+      <path d="M16 3.13a4 4 0 010 7.75" />
+    </svg>
+  ),
+  overloaded: (color) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  ),
+  available: (color) => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
       <polyline points="22 4 12 14.01 9 11.01" />
     </svg>
   ),
-  clock: (color) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </svg>
-  ),
-  folder: (color) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" />
-    </svg>
-  ),
 };
 
-export default function Stats({ tasks, projects }) {
-  const totalTasks = tasks?.length || 0;
-  const completedTasks = tasks?.filter((t) => t.status === 'done').length || 0;
-  const inProgress = tasks?.filter((t) => t.status === 'in-progress').length || 0;
-  const activeProjects = projects?.filter((p) => p.status === 'active').length || 0;
+export default function WorkloadStats({ members }) {
+  const totalTasks = members?.reduce((sum, m) => sum + m.total_tasks, 0) || 0;
+  const avgTasks = members?.length ? Math.round((totalTasks / members.length) * 10) / 10 : 0;
+  const overloadedCount = members?.filter((m) => m.total_tasks >= 8).length || 0;
+  const availableCount = members?.filter((m) => m.total_tasks === 0).length || 0;
 
   const stats = [
-    { label: 'Total Tasks', value: totalTasks, icon: icons.tasks, color: 'var(--color-info)', bg: 'var(--color-info-light)' },
-    // BUG: Typo — "Completd" instead of "Completed"
-    { label: 'Completd Tasks', value: completedTasks, icon: icons.check, color: 'var(--color-success)', bg: 'var(--color-success-light)' },
-    { label: 'In Progress', value: inProgress, icon: icons.clock, color: 'var(--color-warning)', bg: 'var(--color-warning-light)' },
-    { label: 'Active Projects', value: activeProjects, icon: icons.folder, color: 'var(--color-primary)', bg: 'var(--color-primary-light)' },
+    { label: 'Total Team Tasks', value: totalTasks, icon: icons.tasks, color: 'var(--color-info)', bg: 'var(--color-info-light)' },
+    { label: 'Avg Per Member', value: avgTasks, icon: icons.avg, color: 'var(--color-primary)', bg: 'var(--color-primary-light)' },
+    { label: 'Overloaded', value: overloadedCount, icon: icons.overloaded, color: 'var(--color-error)', bg: 'var(--color-error-light)' },
+    { label: 'Available', value: availableCount, icon: icons.available, color: 'var(--color-success)', bg: 'var(--color-success-light)' },
   ];
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-4)' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
       {stats.map((stat) => (
         <div key={stat.label} style={statCardStyle}>
           <div style={iconWrapStyle(stat.bg)}>

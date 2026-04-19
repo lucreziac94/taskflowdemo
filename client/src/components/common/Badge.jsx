@@ -9,6 +9,9 @@ const colorMap = {
   'high': { bg: '#fff7ed', text: 'var(--color-priority-high)' },
   'medium': { bg: 'var(--color-accent-light)', text: '#92700c' },
   'low': { bg: 'var(--color-border-light)', text: 'var(--color-priority-low)' },
+  // Workload status
+  'overloaded': { bg: 'var(--color-error-light)', text: 'var(--color-error)' },
+  'available': { bg: 'var(--color-success-light)', text: 'var(--color-success)' },
   // Project status
   'active': { bg: 'var(--color-success-light)', text: 'var(--color-success)' },
   'completed': { bg: 'var(--color-border-light)', text: 'var(--color-text-secondary)' },

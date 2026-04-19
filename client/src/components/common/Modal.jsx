@@ -38,7 +38,7 @@ const closeBtnStyle = {
   lineHeight: 1,
 };
 
-export default function Modal({ isOpen, onClose, title, children }) {
+export default function Modal({ isOpen, onClose, title, children, maxWidth }) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -52,7 +52,7 @@ export default function Modal({ isOpen, onClose, title, children }) {
 
   return (
     <div style={overlayStyle} onClick={onClose}>
-      <div style={cardStyle} onClick={(e) => e.stopPropagation()}>
+      <div style={{ ...cardStyle, ...(maxWidth ? { maxWidth } : {}) }} onClick={(e) => e.stopPropagation()}>
         <div style={headerStyle}>
           <h3>{title}</h3>
           <button style={closeBtnStyle} onClick={onClose}>&times;</button>
